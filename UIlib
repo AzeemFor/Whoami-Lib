@@ -25,65 +25,42 @@ function Library:CreateWindow(Settings)
     LoadingFrame.Size = UDim2.new(0, 350, 0, 200)
     LoadingFrame.Position = UDim2.new(0.5, -175, 0.5, -100)
     LoadingFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    LoadingFrame.GroupTransparency = 1
+    LoadingFrame.GroupTransparency = 1 -- Start Invisible
     Instance.new("UICorner", LoadingFrame).CornerRadius = UDim.new(0, 12)
-    Instance.new("UIStroke", LoadingFrame).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", LoadingFrame).Color = Color3.fromRGB(45, 45, 45)
 
     local LTitle = Instance.new("TextLabel", LoadingFrame)
     LTitle.Text = Name
     LTitle.Size = UDim2.new(1, 0, 0, 50)
     LTitle.Position = UDim2.new(0, 0, 0.2, 0)
-    LTitle.TextColor3 = Color3.new(1, 1, 1)
-    LTitle.Font = Enum.Font.GothamBold
-    LTitle.TextSize = 24
-    LTitle.BackgroundTransparency = 1
+    LTitle.TextColor3 = Color3.new(1, 1, 1); LTitle.Font = "GothamBold"; LTitle.TextSize = 26; LTitle.BackgroundTransparency = 1
 
     local LSub = Instance.new("TextLabel", LoadingFrame)
     LSub.Text = Sub
-    LSub.Size = UDim2.new(1, 0, 0, 20)
-    LSub.Position = UDim2.new(0, 0, 0.45, 0)
-    LSub.TextColor3 = Color3.fromRGB(150, 150, 150)
-    LSub.Font = Enum.Font.Gotham
-    LSub.TextSize = 14
-    LSub.BackgroundTransparency = 1
+    LSub.Position = UDim2.new(0, 0, 0.45, 0); LSub.Size = UDim2.new(1, 0, 0, 20)
+    LSub.TextColor3 = Color3.fromRGB(150, 150, 150); LSub.Font = "Gotham"; LSub.TextSize = 14; LSub.BackgroundTransparency = 1
 
     local LoadBarBack = Instance.new("Frame", LoadingFrame)
-    LoadBarBack.Size = UDim2.new(0.8, 0, 0, 4)
-    LoadBarBack.Position = UDim2.new(0.1, 0, 0.75, 0)
-    LoadBarBack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    LoadBarBack.Size = UDim2.new(0.8, 0, 0, 4); LoadBarBack.Position = UDim2.new(0.1, 0, 0.75, 0); LoadBarBack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Instance.new("UICorner", LoadBarBack)
 
     local LoadBarFill = Instance.new("Frame", LoadBarBack)
-    LoadBarFill.Size = UDim2.new(0, 0, 1, 0)
-    LoadBarFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    LoadBarFill.Size = UDim2.new(0, 0, 1, 0); LoadBarFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
     Instance.new("UICorner", LoadBarFill)
 
-    -- // 2. MAIN WINDOW (HIDDEN INITIALLY) //
+    -- // 2. MAIN WINDOW //
     local Main = Instance.new("CanvasGroup", Screen)
     Main.Size = UDim2.new(0, 520, 0, 400)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(13, 13, 13)
-    Main.GroupTransparency = 1
-    Main.Visible = false
+    Main.GroupTransparency = 1 -- Start Invisible
+    Main.Visible = false -- Start Hidden
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
     Instance.new("UIStroke", Main).Color = Color3.fromRGB(35, 35, 35)
 
-    -- // Header & Sidebar (Same as before) //
     local Header = Instance.new("Frame", Main)
-    Header.Size = UDim2.new(1, 0, 0, 55)
-    Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Header.Size = UDim2.new(1, 0, 0, 55); Header.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
     Instance.new("UICorner", Header)
-
-    local Title = Instance.new("TextLabel", Header)
-    Title.Text = Name
-    Title.Size = UDim2.new(0.5, 0, 0.6, 0)
-    Title.Position = UDim2.new(0, 15, 0.1, 0)
-    Title.TextColor3 = Color3.new(1,1,1); Title.Font = "GothamBold"; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = "Left"
-
-    local SubLabel = Instance.new("TextLabel", Header)
-    SubLabel.Text = Sub
-    SubLabel.Position = UDim2.new(0, 15, 0.6, 0)
-    SubLabel.TextColor3 = Color3.fromRGB(150, 150, 150); SubLabel.Font = "Gotham"; SubLabel.TextSize = 12; SubLabel.BackgroundTransparency = 1; SubLabel.TextXAlignment = "Left"
 
     local Sidebar = Instance.new("ScrollingFrame", Main)
     Sidebar.Size = UDim2.new(0, 140, 1, -75); Sidebar.Position = UDim2.new(0, 10, 0, 65); Sidebar.BackgroundTransparency = 1; Sidebar.ScrollBarThickness = 0
@@ -94,18 +71,22 @@ function Library:CreateWindow(Settings)
 
     -- // LOADING SEQUENCE //
     task.spawn(function()
-        Fade(LoadingFrame, 0, 0.5) -- Fade In Splash
+        Fade(LoadingFrame, 0, 0.4) -- Show splash
         task.wait(0.5)
-        TS:Create(LoadBarFill, TweenInfo.new(2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-        task.wait(2.2)
-        Fade(LoadingFrame, 1, 0.5) -- Fade Out Splash
-        task.wait(0.5)
+        local fillTween = TS:Create(LoadBarFill, TweenInfo.new(2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)})
+        fillTween:Play()
+        fillTween.Completed:Wait()
+        
+        task.wait(0.2)
+        Fade(LoadingFrame, 1, 0.4) -- Hide splash
+        task.wait(0.4)
         LoadingFrame:Destroy()
+        
         Main.Visible = true
-        Fade(Main, 0, 0.5) -- Fade In Main UI
+        Fade(Main, 0, 0.5) -- Smoothly bring in Main UI
     end)
 
-    -- // Standard Dragging //
+    -- // Dragging Logic //
     local dragging, dragInput, dragStart, startPos
     Header.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -116,15 +97,14 @@ function Library:CreateWindow(Settings)
     UIS.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            TS:Create(Main, TweenInfo.new(0.12), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
+            TS:Create(Main, TweenInfo.new(0.1), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
         end
     end)
 
-    -- // CreateTab Logic (Same as before) //
     function Window:CreateTab(TabName)
         local TabBtn = Instance.new("TextButton", Sidebar)
-        TabBtn.Size = UDim2.new(1, 0, 0, 35); TabBtn.Text = "  " .. TabName; TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20); TabBtn.TextColor3 = Color3.fromRGB(180, 180, 180); TabBtn.Font = "GothamMedium"; TabBtn.TextXAlignment = "Left"
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6); Instance.new("UIStroke", TabBtn).Color = Color3.fromRGB(35, 35, 35)
+        TabBtn.Size = UDim2.new(1, 0, 0, 35); TabBtn.Text = "  "..TabName; TabBtn.BackgroundColor3 = Color3.fromRGB(25,25,25); TabBtn.TextColor3 = Color3.new(1,1,1); TabBtn.Font = "GothamMedium"; TabBtn.TextXAlignment = "Left"
+        Instance.new("UICorner", TabBtn); Instance.new("UIStroke", TabBtn).Color = Color3.fromRGB(45,45,45)
 
         local Page = Instance.new("ScrollingFrame", Container)
         Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1; Page.ScrollBarThickness = 0
@@ -139,8 +119,8 @@ function Library:CreateWindow(Settings)
         local Elements = {Page = Page}
         function Elements:Button(txt, cb)
             local B = Instance.new("TextButton", self.Page)
-            B.Size, B.Text = UDim2.new(1, -10, 0, 40), "  " .. txt; B.BackgroundColor3, B.TextColor3 = Color3.fromRGB(22,22,22), Color3.fromRGB(220, 220, 220); B.Font, B.TextXAlignment = "GothamMedium", "Left"
-            Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6); Instance.new("UIStroke", B).Color = Color3.fromRGB(35, 35, 35)
+            B.Size, B.Text = UDim2.new(1, -10, 0, 40), "  "..txt; B.BackgroundColor3, B.TextColor3 = Color3.fromRGB(22,22,22), Color3.new(0.9,0.9,0.9); B.Font, B.TextXAlignment = "GothamMedium", "Left"
+            Instance.new("UICorner", B); Instance.new("UIStroke", B).Color = Color3.fromRGB(35,35,35)
             B.MouseButton1Click:Connect(cb)
             return self
         end
