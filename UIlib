@@ -1,29 +1,36 @@
+-- // version: 1.0.3 (Tween Drag & Big Text) -- yes
 local Library = {}
-local TS = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 function Library:CreateWindow(Settings)
     local Window = {Tabs = {}}
     local Name = Settings.Name or "Rayfield Hub"
     
-    local Screen = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer.PlayerGui)
+    local Screen = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
     Screen.Name = "Rayfield_Suite"
     Screen.ResetOnSpawn = false
 
+    -- // MAIN WINDOW //
     local Main = Instance.new("CanvasGroup", Screen)
     Main.Size = UDim2.new(0, 500, 0, 380)
     Main.Position = UDim2.new(0.5, -250, 0.5, -190)
     Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
-    Instance.new("UIStroke", Main).Color = Color3.fromRGB(35, 35, 35)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+    local MainStroke = Instance.new("UIStroke", Main)
+    MainStroke.Color = Color3.fromRGB(35, 35, 35)
+    MainStroke.Thickness = 1.2
 
-    -- Header
+    -- // HEADER //
     local Header = Instance.new("Frame", Main)
-    Header.Size = UDim2.new(1, 0, 0, 45); Header.BackgroundTransparency = 1
+    Header.Size = UDim2.new(1, 0, 0, 45)
+    Header.BackgroundTransparency = 1
     
     local Title = Instance.new("TextLabel", Header)
     Title.Text = Name; Title.Size = UDim2.new(1, -100, 1, 0); Title.Position = UDim2.new(0, 15, 0, 0)
-    Title.TextColor3 = Color3.new(1,1,1); Title.Font = "GothamBold"; Title.TextSize = 18 -- BIGGER TEXT
+    Title.TextColor3 = Color3.new(1,1,1); Title.Font = "GothamBold"; Title.TextSize = 18
     Title.TextXAlignment = "Left"; Title.BackgroundTransparency = 1
 
     -- Horizontal Tab Bar
@@ -34,15 +41,33 @@ function Library:CreateWindow(Settings)
 
     -- Container
     local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(1, -30, 1, -120); Container.Position = UDim2.new(0, 15, 0, 105); Container.BackgroundTransparency = 1
+    Container.Size = UDim2.new(1, -30, 1, -120); Container.Position = UDim2.new(0, 15, 0, 110); Container.BackgroundTransparency = 1
+
+    -- // TWEEN DRAGGING //
+    local dragging, dragStart, startPos
+    Header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true; dragStart = input.Position; startPos = Main.Position
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            local targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            TS:Create(Main, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+        end
+    end)
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    end)
 
     function Window:CreateTab(TabName, IconID)
         local TabBtn = Instance.new("TextButton", TabBar)
-        TabBtn.Size = UDim2.new(0, 120, 1, 0); TabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        TabBtn.Size = UDim2.new(0, 130, 1, 0); TabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         TabBtn.Text = "       " .. TabName; TabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-        TabBtn.Font = "GothamMedium"; TabBtn.TextSize = 15; TabBtn.TextXAlignment = "Left"
+        TabBtn.Font = "GothamMedium"; TabBtn.TextSize = 16; TabBtn.TextXAlignment = "Left"
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
-        local TStroke = Instance.new("UIStroke", TabBtn); TStroke.Color = Color3.fromRGB(40, 40, 40)
+        Instance.new("UIStroke", TabBtn).Color = Color3.fromRGB(40, 40, 40)
 
         local Icon = Instance.new("ImageLabel", TabBtn)
         Icon.Size = UDim2.new(0, 20, 0, 20); Icon.Position = UDim2.new(0, 10, 0.5, -10)
@@ -64,7 +89,13 @@ function Library:CreateWindow(Settings)
             TS:Create(TabBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(240, 240, 240), TextColor3 = Color3.fromRGB(20, 20, 20)}):Play()
             Icon.ImageColor3 = Color3.fromRGB(20, 20, 20)
         end)
-        if #TabBar:GetChildren() == 2 then Page.Visible = true; TabBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240); TabBtn.TextColor3 = Color3.fromRGB(20, 20, 20); Icon.ImageColor3 = Color3.fromRGB(20, 20, 20) end
+        
+        if #TabBar:GetChildren() == 2 then 
+            Page.Visible = true
+            TabBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+            TabBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
+            Icon.ImageColor3 = Color3.fromRGB(20, 20, 20)
+        end
 
         local Elements = {Page = Page}
 
@@ -72,15 +103,31 @@ function Library:CreateWindow(Settings)
             local TFrame = Instance.new("Frame", self.Page)
             TFrame.Size = UDim2.new(1, 0, 0, 50); TFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
             Instance.new("UICorner", TFrame); Instance.new("UIStroke", TFrame).Color = Color3.fromRGB(35, 35, 35)
-            local TText = Instance.new("TextLabel", TFrame); TText.Text = "  "..txt; TText.Size = UDim2.new(1,0,1,0); TText.TextColor3 = Color3.fromRGB(230,230,230); TText.Font = "GothamMedium"; TText.TextSize = 16; TText.TextXAlignment = "Left"; TText.BackgroundTransparency = 1
-            local Switch = Instance.new("TextButton", TFrame); Switch.Size = UDim2.new(0,44,0,24); Switch.Position = UDim2.new(1,-54,0.5,-12); Switch.BackgroundColor3 = Color3.fromRGB(40,40,40); Switch.Text = ""; Instance.new("UICorner", Switch).CornerRadius = UDim.new(1,0)
-            local Dot = Instance.new("Frame", Switch); Dot.Size = UDim2.new(0,18,0,18); Dot.Position = UDim2.new(0,3,0.5,-9); Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
+            
+            local TText = Instance.new("TextLabel", TFrame)
+            TText.Text = "  "..txt; TText.Size = UDim2.new(1,0,1,0); TText.TextColor3 = Color3.fromRGB(230,230,230)
+            TText.Font = "GothamMedium"; TText.TextSize = 16; TText.TextXAlignment = "Left"; TText.BackgroundTransparency = 1
+            
+            local Switch = Instance.new("TextButton", TFrame)
+            Switch.Size = UDim2.new(0,44,0,24); Switch.Position = UDim2.new(1,-54,0.5,-12)
+            Switch.BackgroundColor3 = Color3.fromRGB(40,40,40); Switch.Text = ""; Instance.new("UICorner", Switch).CornerRadius = UDim.new(1,0)
+            
+            local Dot = Instance.new("Frame", Switch)
+            Dot.Size = UDim2.new(0,18,0,18); Dot.Position = UDim2.new(0,3,0.5,-9)
+            Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
+            
             local s = false
-            Switch.MouseButton1Click:Connect(function() s = not s; TS:Create(Switch, TweenInfo.new(0.25), {BackgroundColor3 = s and Color3.fromRGB(0, 140, 255) or Color3.fromRGB(40,40,40)}):Play(); TS:Create(Dot, TweenInfo.new(0.25), {Position = s and UDim2.new(1,-21,0.5,-9) or UDim2.new(0,3,0.5,-9)}):Play(); cb(s) end)
+            Switch.MouseButton1Click:Connect(function()
+                s = not s
+                TS:Create(Switch, TweenInfo.new(0.25), {BackgroundColor3 = s and Color3.fromRGB(0, 140, 255) or Color3.fromRGB(40,40,40)}):Play()
+                TS:Create(Dot, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = s and UDim2.new(1,-21,0.5,-9) or UDim2.new(0,3,0.5,-9)}):Play()
+                cb(s)
+            end)
             return self
         end
         return Elements
     end
     return Window
 end
+
 return Library
