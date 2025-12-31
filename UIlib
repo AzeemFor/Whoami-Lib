@@ -1,0 +1,123 @@
+local Library = {}
+local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+function Library:CreateWindow(Settings)
+    local Window = {Tabs = {}}
+    
+    -- // CONFIGURATION //
+    local Name = Settings.Name or "Library"
+    local Sub = Settings.LoadingSubtitle or "by user"
+    local Devs = Settings.Developers or {}
+    local KeySystem = Settings.KeySystem or false
+    local KeySettings = Settings.KeySettings or {}
+
+    -- // UI CONSTRUCTION (TOP SECTION) //
+    local Screen = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+    Screen.Name = "UI_Suite"
+    Screen.ResetOnSpawn = false
+
+    local Main = Instance.new("Frame", Screen)
+    Main.Size, Main.BackgroundColor3 = UDim2.new(0, 500, 0, 380), Color3.fromRGB(15, 15, 15)
+    Main.Position = UDim2.new(0.5, -250, 0.5, -190)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+
+    -- Header
+    local Header = Instance.new("Frame", Main)
+    Header.Size, Header.BackgroundColor3 = UDim2.new(1, 0, 0, 75), Color3.fromRGB(65, 65, 65)
+    Instance.new("UICorner", Header)
+
+    local Title = Instance.new("TextLabel", Header)
+    Title.Text, Title.Size = Name, UDim2.new(0, 200, 0, 40)
+    Title.Position, Title.TextColor3 = UDim2.new(0, 15, 0, 10), Color3.new(0,0,0)
+    Title.Font, Title.TextSize, Title.BackgroundTransparency = Enum.Font.GothamBold, 24, 1
+    Title.TextXAlignment = "Left"
+
+    local SubLabel = Instance.new("TextLabel", Header)
+    SubLabel.Text, SubLabel.Size = Sub, UDim2.new(0, 200, 0, 20)
+    SubLabel.Position, SubLabel.TextColor3 = UDim2.new(0, 25, 0, 40), Color3.new(0.1, 0.1, 0.1)
+    SubLabel.Font, SubLabel.TextSize, SubLabel.BackgroundTransparency = Enum.Font.Gotham, 14, 1
+    SubLabel.TextXAlignment = "Left"
+
+    -- Role Check
+    local isDev = table.find(Devs, LocalPlayer.Name)
+    local Role = Instance.new("TextLabel", Main)
+    Role.Text = isDev and "{Role: Developer}" or "{Role: User}"
+    Role.TextColor3 = isDev and Color3.new(1,0,0) or Color3.new(0,1,0)
+    Role.Position, Role.Size = UDim2.new(0, 145, 0, 85), UDim2.new(0, 100, 0, 20)
+    Role.BackgroundTransparency, Role.TextXAlignment = 1, "Left"
+
+    -- Sidebar & Container
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size, Sidebar.Position = UDim2.new(0, 120, 1, -95), UDim2.new(0, 10, 0, 85)
+    Sidebar.BackgroundTransparency = 1
+    Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
+
+    local Container = Instance.new("Frame", Main)
+    Container.Size, Container.Position = UDim2.new(1, -155, 1, -115), UDim2.new(0, 140, 0, 110)
+    Container.BackgroundTransparency = 1
+
+    -- // TAB & ELEMENT LOGIC (BOTTOM SECTION) //
+    function Window:CreateTab(TabName, IconID)
+        local TabBtn = Instance.new("TextButton", Sidebar)
+        TabBtn.Size, TabBtn.Text = UDim2.new(1, 0, 0, 30), "  " .. TabName
+        TabBtn.BackgroundColor3, TabBtn.TextColor3 = Color3.fromRGB(35, 35, 35), Color3.new(1,1,1)
+        TabBtn.TextXAlignment = "Left"
+        Instance.new("UICorner", TabBtn)
+
+        local Page = Instance.new("ScrollingFrame", Container)
+        Page.Size, Page.Visible, Page.BackgroundTransparency = UDim2.new(1, 0, 1, 0), false, 1
+        Page.ScrollBarThickness = 0
+        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 5)
+
+        TabBtn.MouseButton1Click:Connect(function()
+            for _, v in pairs(Container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
+            Page.Visible = true
+        end)
+        if #Sidebar:GetChildren() == 2 then Page.Visible = true end
+
+        -- THE CHAINER (One-Line Magic)
+        local Elements = {Page = Page}
+
+        function Elements:Button(txt, cb)
+            local B = Instance.new("TextButton", self.Page)
+            B.Size, B.Text = UDim2.new(1, -10, 0, 35), "  " .. txt
+            B.BackgroundColor3, B.TextColor3 = Color3.fromRGB(30,30,30), Color3.new(1,1,1)
+            B.TextXAlignment = "Left"
+            Instance.new("UICorner", B)
+            B.MouseButton1Click:Connect(cb or function() end)
+            return self
+        end
+
+        function Elements:Toggle(txt, cb)
+            local T = Instance.new("TextButton", self.Page)
+            T.Size, T.Text = UDim2.new(1, -10, 0, 35), "  [OFF] " .. txt
+            local s = false
+            T.MouseButton1Click:Connect(function()
+                s = not s
+                T.Text = (s and "  [ON] " or "  [OFF] ") .. txt
+                T.TextColor3 = s and Color3.new(0,1,0) or Color3.new(1,1,1)
+                cb(s)
+            end)
+            return self
+        end
+
+        function Elements:Slider(txt, min, max, cb)
+            local S = Instance.new("TextButton", self.Page)
+            S.Size, S.Text = UDim2.new(1, -10, 0, 35), "  " .. txt .. ": " .. min
+            S.MouseButton1Click:Connect(function()
+                local val = math.random(min, max)
+                S.Text = "  " .. txt .. ": " .. val
+                cb(val)
+            end)
+            return self
+        end
+
+        return Elements
+    end
+
+    return Window
+end
+
+return Library
