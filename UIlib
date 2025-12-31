@@ -5,109 +5,187 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 function Library:CreateWindow(Settings)
-    local Window = {Tabs = {}}
-    local Name = Settings.Name or "Whoami Lib"
-    local Sub = Settings.LoadingSubtitle or "by user"
+    local Window = {Tabs = {}, Closed = false, Minimized = false}
+    local Name = Settings.Name or "Rayfield Hub"
     
     local Screen = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
-    Screen.Name = "Whoami_Suite"
+    Screen.Name = "Rayfield_Suite"
+    Screen.ResetOnSpawn = false
     Screen.IgnoreGuiInset = true
 
-    -- // COMPACT SPLASH SCREEN //
-    local LoadingFrame = Instance.new("CanvasGroup", Screen)
-    LoadingFrame.Size = UDim2.new(0, 300, 0, 180)
-    LoadingFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
-    LoadingFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    LoadingFrame.GroupTransparency = 1
-    Instance.new("UICorner", LoadingFrame).CornerRadius = UDim.new(0, 12)
-    Instance.new("UIStroke", LoadingFrame).Color = Color3.fromRGB(40, 40, 40)
-
-    local LTitle = Instance.new("TextLabel", LoadingFrame)
-    LTitle.Text = Name; LTitle.Size = UDim2.new(1, 0, 0.6, 0); LTitle.TextColor3 = Color3.new(1,1,1)
-    LTitle.Font = "GothamBold"; LTitle.TextSize = 22; LTitle.BackgroundTransparency = 1
-
-    local BarBack = Instance.new("Frame", LoadingFrame)
-    BarBack.Size = UDim2.new(0.8, 0, 0, 3); BarBack.Position = UDim2.new(0.1, 0, 0.8, 0); BarBack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    local BarFill = Instance.new("Frame", BarBack); BarFill.Size = UDim2.new(0, 0, 1, 0); BarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-
-    -- // MODERN COMPACT SUITE //
+    -- // MAIN WINDOW //
     local Main = Instance.new("CanvasGroup", Screen)
-    Main.Size = UDim2.new(0, 450, 0, 350) -- Slimmer Width
-    Main.Position = UDim2.new(0.5, -225, 0.5, -175)
-    Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-    Main.Visible = false
-    Main.GroupTransparency = 1
+    Main.Size = UDim2.new(0, 480, 0, 360)
+    Main.Position = UDim2.new(0.5, -240, 0.5, -180)
+    Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
-    Instance.new("UIStroke", Main).Color = Color3.fromRGB(30, 30, 30)
+    local MainStroke = Instance.new("UIStroke", Main)
+    MainStroke.Color = Color3.fromRGB(40, 40, 40)
+    MainStroke.Thickness = 1.2
 
-    -- Side Tab Bar (Rayfield Style)
-    local SideFrame = Instance.new("Frame", Main)
-    SideFrame.Size = UDim2.new(0, 130, 1, 0); SideFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15); SideFrame.BorderSizePixel = 0
-    Instance.new("UICorner", SideFrame)
+    -- // HEADER //
+    local Header = Instance.new("Frame", Main)
+    Header.Size = UDim2.new(1, 0, 0, 40)
+    Header.BackgroundTransparency = 1
+    
+    local Title = Instance.new("TextLabel", Header)
+    Title.Text = Name
+    Title.Size = UDim2.new(1, -100, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.BackgroundTransparency = 1
 
-    local Sidebar = Instance.new("ScrollingFrame", SideFrame)
-    Sidebar.Size = UDim2.new(1, -10, 1, -60); Sidebar.Position = UDim2.new(0, 5, 0, 50); Sidebar.BackgroundTransparency = 1; Sidebar.ScrollBarThickness = 0
-    Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 4)
+    -- Controls (Minimize and X)
+    local Controls = Instance.new("Frame", Header)
+    Controls.Size = UDim2.new(0, 80, 1, 0)
+    Controls.Position = UDim2.new(1, -85, 0, 0)
+    Controls.BackgroundTransparency = 1
+    local ControlList = Instance.new("UIListLayout", Controls)
+    ControlList.FillDirection = Enum.FillDirection.Horizontal
+    ControlList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    ControlList.VerticalAlignment = Enum.VerticalAlignment.Center
+    ControlList.Padding = UDim.new(0, 10)
 
-    local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(1, -145, 1, -20); Container.Position = UDim2.new(0, 140, 0, 10); Container.BackgroundTransparency = 1
+    local function CreateControl(icon, color, callback)
+        local Btn = Instance.new("ImageButton", Controls)
+        Btn.Size = UDim2.new(0, 18, 0, 18)
+        Btn.BackgroundTransparency = 1
+        Btn.Image = icon
+        Btn.ImageColor3 = color
+        Btn.MouseButton1Click:Connect(callback)
+        return Btn
+    end
 
-    -- // TRANSITION //
-    task.spawn(function()
-        TS:Create(LoadingFrame, TweenInfo.new(0.5), {GroupTransparency = 0}):Play()
-        task.wait(0.4)
-        TS:Create(BarFill, TweenInfo.new(1.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-        task.wait(1.6)
-        TS:Create(LoadingFrame, TweenInfo.new(0.5), {GroupTransparency = 1}):Play()
-        task.wait(0.5); LoadingFrame:Destroy(); Main.Visible = true
-        TS:Create(Main, TweenInfo.new(0.5), {GroupTransparency = 0}):Play()
+    -- Close Button
+    CreateControl("rbxassetid://10747384394", Color3.fromRGB(200, 50, 50), function()
+        TS:Create(Main, TweenInfo.new(0.3), {GroupTransparency = 1, Size = UDim2.new(0, 450, 0, 330)}):Play()
+        task.wait(0.3)
+        Screen:Destroy()
     end)
 
-    -- // Smooth Tween Dragging //
-    local dragging, dragInput, dragStart, startPos
-    Main.InputBegan:Connect(function(input)
+    -- Minimize Button
+    local Minimized = false
+    CreateControl("rbxassetid://10734896206", Color3.fromRGB(200, 200, 200), function()
+        Minimized = not Minimized
+        TS:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = Minimized and UDim2.new(0, 480, 0, 40) or UDim2.new(0, 480, 0, 360)}):Play()
+    end)
+
+    -- // HORIZONTAL TAB BAR //
+    local TabBar = Instance.new("ScrollingFrame", Main)
+    TabBar.Size = UDim2.new(1, -20, 0, 35)
+    TabBar.Position = UDim2.new(0, 10, 0, 45)
+    TabBar.BackgroundTransparency = 1
+    TabBar.ScrollBarThickness = 0
+    local TabList = Instance.new("UIListLayout", TabBar)
+    TabList.FillDirection = Enum.FillDirection.Horizontal
+    TabList.Padding = UDim.new(0, 8)
+
+    -- Content Area
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(1, -24, 1, -100)
+    Container.Position = UDim2.new(0, 12, 0, 90)
+    Container.BackgroundTransparency = 1
+
+    -- // DRAGGING //
+    local dragging, dragStart, startPos
+    Header.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos = Main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
     UIS.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            TS:Create(Main, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
-    -- // ELEMENT CHAINING //
-    function Window:CreateTab(TabName)
-        local TabBtn = Instance.new("TextButton", Sidebar)
-        TabBtn.Size = UDim2.new(1, 0, 0, 30); TabBtn.Text = "  " .. TabName
-        TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20); TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        TabBtn.Font = "GothamMedium"; TabBtn.TextXAlignment = "Left"; TabBtn.TextSize = 12
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-        Instance.new("UIStroke", TabBtn).Color = Color3.fromRGB(30, 30, 30)
+    function Window:CreateTab(TabName, IconID)
+        local TabBtn = Instance.new("TextButton", TabBar)
+        TabBtn.Size = UDim2.new(0, 90, 1, 0)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+        TabBtn.Text = "      " .. TabName
+        TabBtn.TextColor3 = Color3.fromRGB(160, 160, 160)
+        TabBtn.Font = Enum.Font.GothamMedium
+        TabBtn.TextSize = 12
+        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
+        local TabStroke = Instance.new("UIStroke", TabBtn)
+        TabStroke.Color = Color3.fromRGB(45, 45, 45)
+
+        -- Tab Icon (Lucide Style)
+        if IconID then
+            local Icon = Instance.new("ImageLabel", TabBtn)
+            Icon.Size = UDim2.new(0, 16, 0, 16)
+            Icon.Position = UDim2.new(0, 8, 0.5, -8)
+            Icon.BackgroundTransparency = 1
+            Icon.Image = "rbxassetid://" .. tostring(IconID)
+            Icon.ImageColor3 = Color3.fromRGB(160, 160, 160)
+        end
 
         local Page = Instance.new("ScrollingFrame", Container)
-        Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1; Page.ScrollBarThickness = 0
-        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 6)
+        Page.Size = UDim2.new(1, 0, 1, 0)
+        Page.Visible = false
+        Page.BackgroundTransparency = 1
+        Page.ScrollBarThickness = 0
+        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
 
         TabBtn.MouseButton1Click:Connect(function()
             for _, v in pairs(Container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
+            for _, v in pairs(TabBar:GetChildren()) do 
+                if v:IsA("TextButton") then 
+                    TS:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(28, 28, 28), TextColor3 = Color3.fromRGB(160, 160, 160)}):Play()
+                    if v:FindFirstChildOfClass("ImageLabel") then v.ImageLabel.ImageColor3 = Color3.fromRGB(160, 160, 160) end
+                end 
+            end
             Page.Visible = true
+            TS:Create(TabBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(240, 240, 240), TextColor3 = Color3.fromRGB(30, 30, 30)}):Play()
+            if TabBtn:FindFirstChildOfClass("ImageLabel") then TabBtn.ImageLabel.ImageColor3 = Color3.fromRGB(30, 30, 30) end
         end)
-        if #Sidebar:GetChildren() == 2 then Page.Visible = true end
+
+        if #TabBar:GetChildren() == 2 then 
+            Page.Visible = true 
+            TabBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+            TabBtn.TextColor3 = Color3.fromRGB(30, 30, 30)
+            if TabBtn:FindFirstChildOfClass("ImageLabel") then TabBtn.ImageLabel.ImageColor3 = Color3.fromRGB(30, 30, 30) end
+        end
 
         local Elements = {Page = Page}
-        function Elements:Button(txt, cb)
-            local B = Instance.new("TextButton", self.Page)
-            B.Size, B.Text = UDim2.new(1, -10, 0, 35), "  " .. txt
-            B.BackgroundColor3, B.TextColor3 = Color3.fromRGB(22, 22, 22), Color3.fromRGB(230, 230, 230)
-            B.Font, B.TextXAlignment, B.TextSize = "GothamMedium", "Left", 12
-            Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", B).Color = Color3.fromRGB(35, 35, 35)
-            B.MouseButton1Click:Connect(cb)
+        
+        function Elements:Toggle(txt, cb)
+            local TFrame = Instance.new("Frame", self.Page)
+            TFrame.Size = UDim2.new(1, 0, 0, 42)
+            TFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+            Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 8)
+            Instance.new("UIStroke", TFrame).Color = Color3.fromRGB(38, 38, 38)
+
+            local TText = Instance.new("TextLabel", TFrame)
+            TText.Text = "  " .. txt
+            TText.Size = UDim2.new(1, 0, 1, 0); TText.TextColor3 = Color3.fromRGB(210, 210, 210)
+            TText.Font = Enum.Font.Gotham; TText.TextXAlignment = Enum.TextXAlignment.Left; TText.BackgroundTransparency = 1
+
+            local TBtn = Instance.new("TextButton", TFrame)
+            TBtn.Size = UDim2.new(0, 38, 0, 22); TBtn.Position = UDim2.new(1, -48, 0.5, -11)
+            TBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); TBtn.Text = ""
+            Instance.new("UICorner", TBtn).CornerRadius = UDim.new(1, 0)
+            local Dot = Instance.new("Frame", TBtn)
+            Dot.Size = UDim2.new(0, 16, 0, 16); Dot.Position = UDim2.new(0, 3, 0.5, -8)
+            Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
+
+            local s = false
+            TBtn.MouseButton1Click:Connect(function()
+                s = not s
+                TS:Create(TBtn, TweenInfo.new(0.25), {BackgroundColor3 = s and Color3.fromRGB(0, 140, 255) or Color3.fromRGB(45, 45, 45)}):Play()
+                TS:Create(Dot, TweenInfo.new(0.25), {Position = s and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)}):Play()
+                cb(s)
+            end)
             return self
         end
+
         return Elements
     end
     return Window
